@@ -1,0 +1,55 @@
+services:
+  search:
+    container_name: search-server
+    image: search-server:latest
+    restart: always
+    ports:
+      - "82:80"
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./html:/usr/share/nginx/html:delegated
+    networks:
+      - search
+
+  manticore:
+    container_name: manticore
+    image: manticoresearch/manticore
+    restart: always
+    ports:
+      - "9306:9306"
+      - "9308:9308"
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./data/manticore:/var/lib/manticore
+    networks:
+      - search
+
+  redis:
+    image: "redis:latest"
+    restart: always
+    ports:
+      - "6379:6379"
+    depends_on:
+      - search
+    healthcheck:
+      test: [ "CMD", "redis-cli","ping" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    volumes:
+      - ./data/redis:/data
+    networks:
+      - search
+
+networks:
+  search:
