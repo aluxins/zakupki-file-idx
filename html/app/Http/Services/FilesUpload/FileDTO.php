@@ -10,6 +10,8 @@ class FileDTO
     public string $original;
     public string $save;
     public string $extension;
+    public string $filename;
+    public bool $status = false;
 
     public function __construct($data)
     {

@@ -32,7 +32,8 @@ trait FileHelpers
      */
     private function parseUid(int $id, string $url, string $reg_number): string
     {
-        $save = $reg_number . '_' . str_replace('uid=', '', parse_url($url, PHP_URL_QUERY)) ?: sha1($url);
+        Arr::keyBy($this->data, 'id')[$id]['url'];
+        $save = $reg_number . '_' . /*str_replace('uid=', '', parse_url($url, PHP_URL_QUERY)) ?: */sha1($url);
         $this->addFieldForData($id, 'save', $save);
         return $save;
     }
@@ -45,6 +46,6 @@ trait FileHelpers
     private function parseFilename(string $s): string
     {
         preg_match('/filename="(.+)";/', $s, $matches);
-        return $matches ? urldecode($matches[1]) : '';
+        return str_replace(' ', '_', $matches ? urldecode($matches[1]) : '');
     }
 }

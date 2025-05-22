@@ -44,14 +44,19 @@ class FileUploadHttp implements FilesUploadInterface
         foreach ($responses as $key => $response) {
             if ($response->ok()) {
                 $reg_number = Arr::keyBy($this->data, 'id')[$key]['reg_number'];
-                $filename = $this->parseFilename($response->getHeader('Content-disposition')[0]);
+                $original = $this->parseFilename($response->getHeader('Content-disposition')[0]);
+                $filename = $reg_number . '_' . sha1(Arr::keyBy($this->data, 'id')[$key]['url']);
+                $extension = substr($original, strripos($original, '.')+1);
+                $save = $filename . '.' . $extension;
+                $this->addFieldForData($key, 'original', $original);
+                $this->addFieldForData($key, 'filename', $filename);
+                $this->addFieldForData($key, 'extension', $extension/*mime_content_type($filename)['extension'] ?? ''*/);
+                $this->addFieldForData($key, 'save', $save);
                 if (Storage::disk('documents')->put(
-                    'original/' . $reg_number . '_' . $filename,
+                    'original/' . $save,
                     $response->getBody()
                 )) {
-                    $this->addFieldForData($key, 'original', $filename);
-                    $this->addFieldForData($key, 'save', $reg_number . '_' . $filename);
-                    $this->addFieldForData($key, 'extension', pathinfo($filename)['extension'] ?? '');
+                    $this->addFieldForData($key, 'status', true);
                 }
             }
         }
