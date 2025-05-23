@@ -20,11 +20,9 @@ class FileUploadHttp implements FilesUploadInterface
     {
         $this->data = $data;
         $this->withHttp();
-        $data_dto = Arr::map($this->data, function (array $item) {
+        return Arr::map($this->data, function (array $item) {
             return new FileDTO($item);
         });
-        $collection = collect($data_dto);
-        return $collection->groupBy('extension')->toArray();
     }
 
     private function withHttp(): void
@@ -50,7 +48,7 @@ class FileUploadHttp implements FilesUploadInterface
                 $save = $filename . '.' . $extension;
                 $this->addFieldForData($key, 'original', $original);
                 $this->addFieldForData($key, 'filename', $filename);
-                $this->addFieldForData($key, 'extension', $extension/*mime_content_type($filename)['extension'] ?? ''*/);
+                $this->addFieldForData($key, 'extension', strtolower($extension)/*mime_content_type($filename)['extension'] ?? ''*/);
                 $this->addFieldForData($key, 'save', $save);
                 if (Storage::disk('documents')->put(
                     'original/' . $save,
