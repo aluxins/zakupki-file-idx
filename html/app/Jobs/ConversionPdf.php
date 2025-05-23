@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Services\FilesUpload\FileDTO;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,18 +17,18 @@ class ConversionPdf implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * @var string
+     * @var FileDto[]
      */
-    private string $name;
+    private array $files;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(string $name)
+    public function __construct(array $files)
     {
-        $this->name = $name;
+        $this->files = $files;
     }
 
     /**
@@ -37,11 +38,13 @@ class ConversionPdf implements ShouldQueue
      */
     public function handle()
     {
-        $command = 'pdftotext -nopgbrk '
-            . Storage::disk('documents')->path('original/') . $this->name . ' '
-            . Storage::disk('documents')->path('convert/') . substr($this->name, 0, strripos($this->name, '.')) . '.txt';
+        foreach ($this->files as $file) {
+            $command = 'pdftotext -nopgbrk '
+                . Storage::disk('documents')->path('original/') . $file->save . ' '
+                . Storage::disk('documents')->path('convert/') . $file->filename . '.txt';
 
-        $return = shell_exec($command);
-        Log::info($command .' : '. $return . ' ' . $this->name);
+            $return = shell_exec($command);
+            Log::info($command . ' : ' . $return . ' ' . $file->save);
+        }
     }
 }

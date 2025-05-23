@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Services\FilesUpload\FileDTO;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,18 +17,18 @@ class Conversion implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * @var string
+     * @var FileDto[]
      */
-    private string $hash;
+    private array $files;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($hash)
+    public function __construct(array $files)
     {
-        $this->hash = $hash;
+        $this->files = $files;
     }
 
     /**
@@ -40,10 +41,10 @@ class Conversion implements ShouldQueue
         //libreoffice --infilter="writer_pdf_import" --convert-to docx input.pdf
         $command = 'soffice --headless --convert-to txt --outdir '
             . Storage::disk('documents')->path('convert/') . ' '
-            . Storage::disk('documents')->path('original/') . $this->hash . '_*';
+            . Storage::disk('documents')->path('original/') . $this->files[0]->reg_number . '_*';
 
         $return = shell_exec($command);
-        Log::info($command .' : '. $return . ' ' . $this->hash);
+        Log::info($command .' : '. $return . ' ' . $this->files[0]->reg_number);
 
     }
 }
