@@ -10,6 +10,7 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - ./html:/usr/share/nginx/html:delegated
+      - ./data/sqlite:/usr/share/nginx/html/database/sqlite:delegated
     networks:
       - search
 

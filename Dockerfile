@@ -38,6 +38,7 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
             unzip \
             python3-pip \
             python-setuptools \
+            sqlite3 \
             git \
             libmemcached-dev \
             libmemcached11 \
@@ -59,6 +60,7 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
             php8.2-pgsql \
             php8.2-intl \
             php8.2-xml \
+            php8.2-sqlite3 \
             php-pear \
     && pecl -d php_suffix=8.2 install -o -f redis memcached \
     && mkdir -p /run/php \
@@ -122,6 +124,9 @@ COPY ./default.conf /etc/nginx/conf.d/default.conf
 
 # Override default nginx welcome page
 COPY html /usr/share/nginx/html
+
+# Create SQLite file
+RUN touch /usr/share/nginx/html/database/sqlite/database.sqlite
 
 # Copy Scripts
 COPY ./start.sh /start.sh
