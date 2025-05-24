@@ -7,29 +7,47 @@ use App\Http\Requests\api\FilesUploadRequest;
 use App\Http\Services\FilesUpload\FilesUploadInterface;
 use App\Jobs\Conversion;
 use App\Jobs\ConversionPdf;
-use Illuminate\Support\Facades\Log;
 
 class FilesUploadController extends Controller
 {
     public function index(FilesUploadRequest $request, FilesUploadInterface $upload): array
     {
-        $download = $upload->download($request->validated());
-        foreach ($download as $extension => $files) {
-            $extension = strtolower($extension);
-            $extension === 'pdf' ? $this->Pdf($files) : $this->Doc($files);
-        }
-        return $download;
-    }
-
-    private function Doc($files): void
-    {
-        Conversion::dispatch($files[0]->reg_number);
-    }
-
-    private function Pdf($files): void
-    {
+        $files = $upload->download($request->validated());
+        $pdf = [];
+        $doc = [];
+        // Группировка файлов по типу.
         foreach ($files as $file) {
-            ConversionPdf::dispatch($file->save);
+            if ($file->extension === 'pdf') {
+                $pdf[] = $file;
+            } else {
+                $doc[] = $file;
+            }
         }
+        if ($pdf) {
+            $this->sendJobPdf($pdf);
+        }
+        if ($doc) {
+            $this->sendJobDoc($doc);
+        }
+
+        return $files;
+    }
+
+    /**
+     * @param array $files
+     * @return void
+     */
+    private function sendJobDoc(array $files): void
+    {
+        Conversion::dispatch($files);
+    }
+
+    /**
+     * @param array $files
+     * @return void
+     */
+    private function sendJobPdf(array $files): void
+    {
+        ConversionPdf::dispatch($files);
     }
 }
