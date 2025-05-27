@@ -30,7 +30,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - ./data/manticore:/var/lib/manticore
+      - ./data/manticore:/var/lib/manticore:delegated
     networks:
       - search
 
@@ -48,7 +48,7 @@ services:
       start_period: 30s
       timeout: 10s
     volumes:
-      - ./data/redis:/data
+      - ./data/redis:/data:delegated
     networks:
       - search
 
