@@ -40,15 +40,15 @@ class AddToSearch implements ShouldQueue
         $table = $client->table('documents');
         $this->checkTable($client, $table);
 
-        $documents = Arr::map($this->files, function (FileDTO $value) {
-            $content = Storage::disk('documents')->get('convert/' . $value->filename . '.txt');
+        $documents = Arr::map($this->files, function (FileDTO $file) {
+            $content = Storage::disk('documents')->get('convert/' . $file->filename . '.txt');
             return $content
                 ? [
-                    'id' => $value->id,
-                    'reg_number' => $value->reg_number,
-                    'content' => Storage::disk('documents')->get('convert/' . $value->filename . '.txt'),
-                    'name' => $value->original,
-                    'url' => $value->url,
+                    'id' => $file->id,
+                    'reg_number' => $file->reg_number,
+                    'content' => $content,
+                    'name' => $file->original,
+                    'url' => $file->url,
                     'hash' => sha1($content),
                 ]
                 : [];
@@ -57,11 +57,28 @@ class AddToSearch implements ShouldQueue
         try {
             $result = $table->addDocuments($documents);
             Log::info('Manticoresearch:' . json_encode($result));
+            $this->unlink($this->files);
         } catch (Exception $e) {
-            Log::info('Manticoresearch Error:' . $e->getMessage() . ' Data: ' . serialize($this->files));
+            Log::error('Manticoresearch Error:' . $e->getMessage() . '; Data: ' . serialize($this->files));
         }
 
+    }
 
+    /**
+     * Удаление файлов.
+     * @param $files
+     * @return void
+     */
+    private function unlink($files): void
+    {
+        foreach ($files as $file) {
+            try {
+                unlink(Storage::disk('documents')->path('original/' . $file->save));
+                unlink(Storage::disk('documents')->path('convert/' . $file->filename . '.txt'));
+            } catch (Exception $e) {
+                Log::error('Ошибка удаления файлов: ' . $e->getMessage() . '; Data: ' . serialize($file));
+            }
+        }
     }
 
     private function checkTable($client, $table): void
@@ -81,4 +98,6 @@ class AddToSearch implements ShouldQueue
             ]);
         }
     }
+
+
 }
