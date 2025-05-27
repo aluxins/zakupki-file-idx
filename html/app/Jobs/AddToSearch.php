@@ -54,9 +54,13 @@ class AddToSearch implements ShouldQueue
                 : [];
         });
 
-        $result = $table->addDocuments($documents);
+        try {
+            $result = $table->addDocuments($documents);
+            Log::info('Manticoresearch:' . json_encode($result));
+        } catch (Exception $e) {
+            Log::info('Manticoresearch Error:' . $e->getMessage() . ' Data: ' . serialize($this->files));
+        }
 
-        Log::info('Manticoresearch:' . json_encode($result));
 
     }
 
