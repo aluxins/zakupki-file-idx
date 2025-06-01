@@ -1,6 +1,6 @@
 services:
   search:
-    container_name: search-server
+    container_name: search_server
     image: search-server:latest
     restart: always
     ports:
@@ -13,7 +13,9 @@ services:
       - ./data/sqlite:/usr/share/nginx/html/database/sqlite:delegated
       - ./data/documents:/usr/share/nginx/html/storage/app/documents:delegated
     networks:
-      - search
+      purchases_network:
+        aliases:
+          - search.local
 
   manticore:
     container_name: manticore
@@ -33,10 +35,13 @@ services:
     volumes:
       - ./data/manticore:/var/lib/manticore:delegated
     networks:
-      - search
+      purchases_network:
+        aliases:
+          - manticore.local
 
   redis:
     image: "redis:latest"
+    container_name: search_redis
     restart: always
     ports:
       - "6379:6379"
@@ -51,7 +56,8 @@ services:
     volumes:
       - ./data/redis:/data:delegated
     networks:
-      - search
+      purchases_network:
 
 networks:
-  search:
+  purchases_network:
+    external: true
