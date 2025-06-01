@@ -9,5 +9,5 @@ use Illuminate\Support\Facades\Route;
     return $request->user();
 })->middleware('auth:sanctum');*/
 
-Route::get('/files-upload', [FilesUploadController::class, 'index']);
+Route::post('/files-upload', [FilesUploadController::class, 'index']);
 Route::get('/files/{table}', [FilesController::class, 'index'])->where('table', '[A-Za-z0-9-_]+');
