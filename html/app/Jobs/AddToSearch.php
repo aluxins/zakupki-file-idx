@@ -42,16 +42,14 @@ class AddToSearch implements ShouldQueue
 
         $documents = Arr::map($this->files, function (FileDTO $file) {
             $content = Storage::disk('documents')->get('convert/' . $file->filename . '.txt');
-            return $content
-                ? [
+            return [
                     'id' => $file->id,
                     'reg_number' => $file->reg_number,
-                    'content' => $content,
+                    'content' => trim($content) ?: 'Файл не найден в хранилище.',
                     'name' => $file->original,
                     'url' => $file->url,
                     'hash' => sha1($content),
-                ]
-                : [];
+                ];
         });
 
         try {
