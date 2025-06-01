@@ -15,13 +15,18 @@ class FilesUploadController extends Controller
         $files = $upload->download($request->validated());
         $pdf = [];
         $doc = [];
+        $zip_rar = [];
         // Группировка файлов по типу.
         foreach ($files as $file) {
             if ($file->extension === 'pdf') {
                 $pdf[] = $file;
-            } else {
-                $doc[] = $file;
+                continue;
             }
+            if ($file->extension === 'zip' or $file->extension === 'rar') {
+                $zip_rar[] = $file;
+                continue;
+            }
+            $doc[] = $file;
         }
         if ($pdf) {
             $this->sendJobPdf($pdf);
