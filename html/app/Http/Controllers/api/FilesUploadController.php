@@ -44,7 +44,7 @@ class FilesUploadController extends Controller
      */
     private function sendJobDoc(array $files): void
     {
-        Conversion::dispatch($files);
+        Conversion::dispatch($files)->onQueue('conversionDoc');
     }
 
     /**
@@ -53,6 +53,6 @@ class FilesUploadController extends Controller
      */
     private function sendJobPdf(array $files): void
     {
-        ConversionPdf::dispatch($files);
+        ConversionPdf::dispatch($files)->onQueue('conversionPdf');
     }
 }

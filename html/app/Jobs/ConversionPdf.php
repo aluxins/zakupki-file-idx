@@ -47,6 +47,6 @@ class ConversionPdf implements ShouldQueue
             Log::info($command . ' : ' . $return . ' ' . $file->save);
         }
 
-        AddToSearch::dispatch($this->files);
+        AddToSearch::dispatch($this->files)->onQueue('indexing')->delay(now()->addSeconds(10));
     }
 }

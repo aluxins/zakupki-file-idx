@@ -46,6 +46,6 @@ class Conversion implements ShouldQueue
         $return = shell_exec($command);
         Log::info($command .' : '. $return . ' ' . $this->files[0]->reg_number);
 
-        AddToSearch::dispatch($this->files);
+        AddToSearch::dispatch($this->files)->onQueue('indexing')->delay(now()->addSeconds(10));
     }
 }
