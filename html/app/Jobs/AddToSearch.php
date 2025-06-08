@@ -37,7 +37,7 @@ class AddToSearch implements ShouldQueue
             'host' => config('manticoresearch.host'),
             'port' => config('manticoresearch.port'),
         ]);
-        $table = $client->table('documents');
+        $table = $client->table('files');
         $this->checkTable($client, $table);
 
         $documents = Arr::map($this->files, function (FileDTO $file) {
@@ -82,14 +82,14 @@ class AddToSearch implements ShouldQueue
     private function checkTable($client, $table): void
     {
         try {
-            $client->tables()->status(['table' => 'documents']);
+            $client->tables()->status(['table' => 'files']);
         } catch (Exception $e) {
             $table->create([
-                'reg_number' => ['type' => 'text'],
+                'reg_number' => ['type' => 'string'],
                 'content' => ['type' => 'text'],
                 'name' => ['type' => 'text'],
-                'url' => ['type' => 'text'],
-                'hash' => ['type' => 'text'],
+                'url' => ['type' => 'string'],
+                'hash' => ['type' => 'string'],
             ], [
                 'min_stemming_len' => '1',
                 'morphology' => 'stem_enru'
