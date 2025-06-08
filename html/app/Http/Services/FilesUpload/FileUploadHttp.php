@@ -5,6 +5,7 @@ namespace App\Http\Services\FilesUpload;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Pool;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class FileUploadHttp implements FilesUploadInterface
@@ -40,6 +41,10 @@ class FileUploadHttp implements FilesUploadInterface
         });
 
         foreach ($responses as $key => $response) {
+            if ($response instanceof \Exception) {
+                Log::error('File upload error: ' . Arr::keyBy($this->data, 'id')[$key]['url']);
+                continue;
+            }
             if ($response->ok()) {
                 $reg_number = Arr::keyBy($this->data, 'id')[$key]['reg_number'];
                 $original = $this->parseFilename($response->getHeader('Content-disposition')[0]);
