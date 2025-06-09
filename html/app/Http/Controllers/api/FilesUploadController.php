@@ -18,6 +18,9 @@ class FilesUploadController extends Controller
         $zip_rar = [];
         // Группировка файлов по типу.
         foreach ($files as $file) {
+            if(!$file->status){
+                continue;
+            }
             if ($file->extension === 'pdf') {
                 $pdf[] = $file;
                 continue;

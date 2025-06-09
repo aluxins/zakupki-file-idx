@@ -41,7 +41,7 @@ class FileUploadHttp implements FilesUploadInterface
         });
 
         foreach ($responses as $key => $response) {
-            if ($response instanceof \Exception) {
+            if ($response instanceof \Exception or empty($response->getHeader('Content-disposition')[0])) {
                 Log::error('File upload error: ' . Arr::keyBy($this->data, 'id')[$key]['url']);
                 continue;
             }
