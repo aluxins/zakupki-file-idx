@@ -126,10 +126,11 @@ COPY ./default.conf /etc/nginx/conf.d/default.conf
 COPY html /usr/share/nginx/html
 
 # Create SQLite file
-RUN mkdir usr/share/nginx/html/database/sqlite && touch /usr/share/nginx/html/database/sqlite/database.sqlite
+RUN mkdir -p usr/share/nginx/html/database/sqlite && touch /usr/share/nginx/html/database/sqlite/database.sqlite
 
 # Copy Scripts
 COPY ./start.sh /start.sh
+RUN chmod +x /start.sh
 
 EXPOSE 80
 
