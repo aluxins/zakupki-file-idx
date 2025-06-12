@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:bullseye-backports
 
 LABEL maintainer="Colin Wilson colin@wyveo.com"
 
@@ -108,10 +108,17 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
-# Install libreoffice for doc to text
-RUN apt-get update && apt-get install -y libreoffice-common
+# Install libreoffice (7.0) for doc to text
+##RUN apt-get update && apt-get install -y libreoffice-common
+##RUN rm -rf /var/lib/apt/lists/*
+##RUN apt-get update && apt-get install -y libreoffice-base
+
+# Install LibreOffice 7.4.7.2 40(Build:2)  for doc to text
+RUN apt-get update && apt-get install -y "libreoffice-common" -t bullseye-backports  \
+    && apt-get install -y "libreoffice-base" -t bullseye-backports  \
+    && apt-get install -y "libreoffice-writer" -t bullseye-backports  \
+    && apt-get install -y "libreoffice-calc" -t bullseye-backports
 RUN rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y libreoffice-base
 
 # Install poppler-utils for pdf to text
 RUN apt-get update && apt-get install -y poppler-utils
@@ -124,6 +131,7 @@ COPY ./default.conf /etc/nginx/conf.d/default.conf
 
 # Override default nginx welcome page
 COPY html /usr/share/nginx/html
+RUN chmod -R 0777 /usr/share/nginx/html/storage/
 
 # Create SQLite file
 RUN mkdir -p usr/share/nginx/html/database/sqlite && touch /usr/share/nginx/html/database/sqlite/database.sqlite
