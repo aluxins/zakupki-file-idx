@@ -16,6 +16,14 @@ services:
       purchases_network:
         aliases:
           - search.local
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.125'
+          memory: 128M
 
   manticore:
     container_name: manticore
@@ -38,6 +46,14 @@ services:
       purchases_network:
         aliases:
           - manticore.local
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.125'
+          memory: 128M
 
   redis:
     image: "redis:latest"
@@ -57,6 +73,14 @@ services:
       - ./data/redis:/data:delegated
     networks:
       purchases_network:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.125'
+          memory: 128M
 
 networks:
   purchases_network:
