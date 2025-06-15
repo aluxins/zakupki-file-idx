@@ -39,7 +39,7 @@ class Conversion implements ShouldQueue
     public function handle()
     {
         //libreoffice --infilter="writer_pdf_import" --convert-to docx input.pdf
-        $command = 'soffice --headless --convert-to txt --outdir '
+        $command = 'nice soffice --headless --convert-to txt --outdir '
             . Storage::disk('documents')->path('convert/') . ' '
             . Storage::disk('documents')->path('original/') . $this->files[0]->reg_number . '_*';
 

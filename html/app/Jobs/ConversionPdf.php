@@ -39,7 +39,7 @@ class ConversionPdf implements ShouldQueue
     public function handle()
     {
         foreach ($this->files as $file) {
-            $command = 'pdftotext -nopgbrk '
+            $command = 'nice pdftotext -nopgbrk '
                 . Storage::disk('documents')->path('original/') . $file->save . ' '
                 . Storage::disk('documents')->path('convert/') . $file->filename . '.txt';
 
