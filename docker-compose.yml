@@ -20,7 +20,7 @@ services:
       resources:
         limits:
           cpus: '0.25'
-          memory: 256M
+          memory: 384M
         reservations:
           cpus: '0.125'
           memory: 128M
@@ -49,8 +49,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: 256M
+          cpus: '0.3'
+          memory: 512M
         reservations:
           cpus: '0.125'
           memory: 128M
@@ -60,7 +60,7 @@ services:
     container_name: search_redis
     restart: always
     ports:
-      - "6379:6379"
+      - "6380:6379"
     depends_on:
       - search
     healthcheck:
@@ -76,11 +76,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: 256M
-        reservations:
-          cpus: '0.125'
+          cpus: '0.1'
           memory: 128M
+        reservations:
+          cpus: '0.01'
+          memory: 32M
 
 networks:
   purchases_network:
