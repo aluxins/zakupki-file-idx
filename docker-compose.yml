@@ -20,7 +20,7 @@ services:
       resources:
         limits:
           cpus: '0.25'
-          memory: 384M
+          memory: 512M
         reservations:
           cpus: '0.125'
           memory: 128M
@@ -56,7 +56,7 @@ services:
           memory: 128M
 
   redis:
-    image: "redis:latest"
+    image: "redis:8.0"
     container_name: search_redis
     restart: always
     ports:
@@ -71,6 +71,8 @@ services:
       timeout: 10s
     volumes:
       - ./data/redis:/data:delegated
+    environment:
+      SKIP_FIX_PERMS: 1
     networks:
       purchases_network:
     deploy:
