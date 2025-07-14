@@ -6,7 +6,6 @@ use App\Http\Services\FilesUpload\FileDTO;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Manticoresearch\Client;
@@ -40,20 +39,29 @@ class AddToSearch implements ShouldQueue
         $table = $client->table('files');
         $this->checkTable($client, $table);
 
-        $documents = Arr::map($this->files, function (FileDTO $file) {
+        $documents_array = [];
+        foreach ($this->files as $file) {
             $content = Storage::disk('documents')->get('convert/' . $file->filename . '.txt');
-            return [
+            if (!is_null($content)) {
+                $documents_array[] = [
                     'id' => $file->id,
                     'reg_number' => $file->reg_number,
-                    'content' => trim($content) ?: 'Файл не найден в хранилище.',
+                    'content' => trim($content),
                     'name' => $file->original,
                     'url' => $file->url,
                     'hash' => sha1($content),
                 ];
-        });
+            }
+        }
+        Log::info('Manticoresearch count indexed: ' . count($documents_array) . ' (' . count($this->files) . ')');
+
+        if(!count($documents_array)){
+            Log::info('Manticoresearch: not indexed');
+            return;
+        }
 
         try {
-            $result = $table->addDocuments($documents);
+            $result = $table->addDocuments($documents_array);
             Log::info('Manticoresearch:' . json_encode($result));
             $this->unlink($this->files);
         } catch (Exception $e) {
