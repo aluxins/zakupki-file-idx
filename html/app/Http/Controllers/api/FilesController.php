@@ -15,10 +15,7 @@ class FilesController extends Controller
      */
     public function index(FileRequest $request, string $table): array
     {
-        $client = new Client([
-            'host' => config('manticoresearch.host'),
-            'port' => config('manticoresearch.port'),
-        ]);
+        $client = $this->client();
 
         try {
             $table = $client->table($table);
@@ -44,5 +41,36 @@ class FilesController extends Controller
         }
 
         return $documents;
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    public function fileId(string $table, int $id): array
+    {
+        $client = $this->client();
+        try {
+            $table = $client->table($table);
+            $document = $table->getDocumentById($id);
+            if (empty($document)) {
+                return ["Файл id = $id не найден."];
+            }
+            $data = $document->getData();
+            $data['size'] = mb_strlen($data['content']);
+            if (mb_strlen($data['content']) > 1024) {
+                $data['content'] = mb_substr($data['content'], 0, 1024) . '...';
+            }
+            return $data;
+        } catch (Exception $e) {
+            throw ValidationException::withMessages([$e->getMessage()]);
+        }
+    }
+
+    private function client(): Client
+    {
+        return new Client([
+            'host' => config('manticoresearch.host'),
+            'port' => config('manticoresearch.port'),
+        ]);
     }
 }
