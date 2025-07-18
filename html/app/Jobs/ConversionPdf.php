@@ -39,7 +39,7 @@ class ConversionPdf implements ShouldQueue
     public function handle()
     {
         foreach ($this->files as $file) {
-            $command = 'nice pdftotext -nopgbrk '
+            $command = 'timeout ' . env('CONVERSION_TIMEOUT', '100') .'s nice pdftotext -nopgbrk '
                 . Storage::disk('documents')->path('original/') . $file->save . ' '
                 . Storage::disk('documents')->path('convert/') . $file->filename . '.txt';
 

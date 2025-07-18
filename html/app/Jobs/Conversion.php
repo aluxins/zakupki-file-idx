@@ -40,7 +40,7 @@ class Conversion implements ShouldQueue
     {
         //libreoffice --infilter="writer_pdf_import" --convert-to docx input.pdf
         $originalFile = glob(Storage::disk('documents')->path('original/') . $this->files[0]->reg_number . '_*', \GLOB_BRACE);
-        $command = 'nice soffice --headless --convert-to txt --outdir '
+        $command = 'timeout ' . env('CONVERSION_TIMEOUT', '100') .'s nice soffice --headless --convert-to txt --outdir '
             . Storage::disk('documents')->path('convert/') . ' '
             . Storage::disk('documents')->path('original/') . $this->files[0]->reg_number . '_*';
         $return = shell_exec($command);
