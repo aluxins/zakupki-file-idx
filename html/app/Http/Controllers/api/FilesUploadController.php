@@ -7,6 +7,7 @@ use App\Http\Requests\api\FilesUploadRequest;
 use App\Http\Services\FilesUpload\FilesUploadInterface;
 use App\Jobs\Conversion;
 use App\Jobs\ConversionPdf;
+use App\Jobs\ExtractArchive;
 
 class FilesUploadController extends Controller
 {
@@ -31,11 +32,14 @@ class FilesUploadController extends Controller
             }
             $doc[] = $file;
         }
-        if ($pdf) {
+        if (count($pdf)) {
             $this->sendJobPdf($pdf);
         }
-        if ($doc) {
+        if (count($doc)) {
             $this->sendJobDoc($doc);
+        }
+        if (count($zip_rar)) {
+            $this->sendJobArchive($zip_rar);
         }
 
         return $files;
@@ -57,5 +61,10 @@ class FilesUploadController extends Controller
     private function sendJobPdf(array $files): void
     {
         ConversionPdf::dispatch($files)->onQueue('conversionPdf');
+    }
+
+    private function sendJobArchive(array $zip_rar): void
+    {
+        ExtractArchive::dispatch($zip_rar)->onQueue('extractArchive');
     }
 }

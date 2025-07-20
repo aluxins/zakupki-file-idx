@@ -21,14 +21,17 @@ class Conversion implements ShouldQueue
      */
     private array $files;
 
+    private string $prefixArchive;
+
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(array $files)
+    public function __construct(array $files, string $prefixArchive = '')
     {
         $this->files = $files;
+        $this->prefixArchive = $prefixArchive;
     }
 
     /**
@@ -39,12 +42,12 @@ class Conversion implements ShouldQueue
     public function handle()
     {
         //libreoffice --infilter="writer_pdf_import" --convert-to docx input.pdf
-        $originalFile = glob(Storage::disk('documents')->path('original/') . $this->files[0]->reg_number . '_*', \GLOB_BRACE);
+        $originalFile = glob(Storage::disk('documents')->path('original/') . $this->prefixArchive . $this->files[0]->reg_number . '_*', \GLOB_BRACE);
         $command = 'timeout ' . env('CONVERSION_TIMEOUT', '100') .'s nice soffice --headless --convert-to txt --outdir '
             . Storage::disk('documents')->path('convert/') . ' '
-            . Storage::disk('documents')->path('original/') . $this->files[0]->reg_number . '_*';
+            . Storage::disk('documents')->path('original/') . $this->prefixArchive . $this->files[0]->reg_number . '_*';
         $return = shell_exec($command);
-        $convertFile = glob(Storage::disk('documents')->path('convert/') . $this->files[0]->reg_number . '_*', \GLOB_BRACE);
+        $convertFile = glob(Storage::disk('documents')->path('convert/') . $this->prefixArchive . $this->files[0]->reg_number . '_*', \GLOB_BRACE);
         $listFile = ' Original - ' . ($originalFile ? implode(', ', $originalFile) : 'not found') .
                     ' Convert - ' . ($convertFile ? implode(', ', $convertFile) : 'not found');
         Log::info($command .' : '. $return . ' Files: ' . $listFile);
