@@ -66,10 +66,10 @@ class AddToSearch implements ShouldQueue
         try {
             $result = $table->addDocuments($documents_array);
             Log::info('Manticoresearch:' . json_encode($result));
-            $this->unlink($this->files);
         } catch (Exception $e) {
             Log::error('Manticoresearch Error:' . $e->getMessage() . '; Data: ' . serialize($this->files));
         }
+        $this->unlink($this->files);
 
     }
 
