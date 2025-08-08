@@ -46,6 +46,9 @@ trait FileHelpers
     private function parseFilename(string $s): string
     {
         preg_match('/filename="(.+)";/', $s, $matches);
-        return str_replace(' ', '_', $matches ? urldecode($matches[1]) : '');
+        $file_name = $matches[1] ?? '';
+        // Имя файла может быть в кодировке ISO-8859-1 или URL-encoded.
+        $file_name = @iconv("UTF-8", "ISO-8859-1", $file_name) ?: $file_name;
+        return str_replace(' ', '_', urldecode($file_name));
     }
 }

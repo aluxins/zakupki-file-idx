@@ -15,7 +15,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "manticoresoftware/manticoresearch-php": "dev-master",
-        "ext-zip": "*"
+        "ext-zip": "*",
+        "ext-iconv": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
