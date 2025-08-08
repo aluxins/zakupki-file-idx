@@ -8,11 +8,13 @@ use App\Http\Services\FilesUpload\FilesUploadInterface;
 use App\Jobs\Conversion;
 use App\Jobs\ConversionPdf;
 use App\Jobs\ExtractArchive;
+use Illuminate\Support\Facades\Log;
 
 class FilesUploadController extends Controller
 {
     public function index(FilesUploadRequest $request, FilesUploadInterface $upload): array
     {
+        Log::info("Files Upload Controller START. reg_number:" . ($request->validated() ? $request->validated()[0]['reg_number'] . ', files: ' . count($request->validated()) : ''));
         $files = $upload->download($request->validated());
         $pdf = [];
         $doc = [];
@@ -42,6 +44,7 @@ class FilesUploadController extends Controller
             $this->sendJobArchive($zip_rar);
         }
 
+        Log::info("Files Upload Controller RESULT. reg_number: " . $request->validated()[0]['reg_number'] . ", files: " . count($files));
         return $files;
     }
 
