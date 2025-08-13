@@ -113,8 +113,8 @@ class ExtractArchive implements ShouldQueue
                     'url' => $file->url,
                     'reg_number' => $file->reg_number,
                     'original' => $file->original,
-                    'save' => $file_prefix_extract . sha1($fileInfo['basename']) . '.' . $fileInfo['extension'],
-                    'extension' => $fileInfo['extension'],
+                    'save' => $file_prefix_extract . sha1($fileInfo['basename']) . (isset($fileInfo['extension']) ? '.' . $fileInfo['extension'] : ''),
+                    'extension' => $fileInfo['extension'] ?? '',
                     'filename' => $file_prefix_extract . sha1($fileInfo['basename']),
                     'status' => true,
                 ]);
