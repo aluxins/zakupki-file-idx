@@ -22,6 +22,19 @@ class ConversionPdf implements ShouldQueue
     private array $files;
 
     /**
+     * @var int
+     */
+    public int $tries = 6;
+
+    /**
+     * @return array<int, int>
+     */
+    public function backoff(): array
+    {
+        return [60, 10*60, 60*60, 12*60*60, 24*60*60, 48*60*60];
+    }
+
+    /**
      * Create a new job instance.
      *
      * @return void
