@@ -16,4 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    })
+    ->withSchedule(function (Schedule $schedule) {
+        $schedule->command('queue:prune-failed --hours=168')->daily();
+        //php artisan queue:prune-failed --hours=168
+    })
+    ->create();
