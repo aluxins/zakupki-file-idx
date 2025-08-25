@@ -85,26 +85,26 @@ class Conversion implements ShouldQueue
     }
 
     /**
-     * Тип файлов: doc, docx
+     * Тип файлов: doc, docx, odt
      *
      * EXEC:
      * ```
      *  timeout 60s nice soffice --headless
      *  --convert-to "txt:Text (encoded):UTF8"
      *  --outdir /usr/share/nginx/html/storage/app/documents/convert/
-     *  /usr/share/nginx/html/storage/app/documents/original/0372200014225000302_*.doc*
+     *  /usr/share/nginx/html/storage/app/documents/original/0372200014225000302_*.[do][do][ct]*
      * ```
      */
     private function execDoc(): string
     {
         return 'timeout ' . env('CONVERSION_TIMEOUT', '100') .'s nice soffice --headless --convert-to "txt:Text (encoded):UTF8" --outdir '
             . Storage::disk('documents')->path('convert/') . ' '
-            . Storage::disk('documents')->path('original/') . $this->prefixArchive . $this->files[0]->reg_number . '_*.doc*';
+            . Storage::disk('documents')->path('original/') . $this->prefixArchive . $this->files[0]->reg_number . '_*.[do][do][ct]*';
 
     }
 
     /**
-     * Тип файлов: xls, xlsx
+     * Тип файлов: xls, xlsx, ods
      *
      * EXEC:
      * ```
@@ -118,7 +118,7 @@ class Conversion implements ShouldQueue
     {
         return 'timeout ' . env('CONVERSION_TIMEOUT', '100') .'s nice soffice --headless --convert-to "txt:Text - txt - csv (StarCalc):9,34,76,1" --outdir '
             . Storage::disk('documents')->path('convert/') . ' '
-            . Storage::disk('documents')->path('original/') . $this->prefixArchive . $this->files[0]->reg_number . '_*.xls*';
+            . Storage::disk('documents')->path('original/') . $this->prefixArchive . $this->files[0]->reg_number . '_*.[xo][ld][s]*';
 
     }
 
@@ -141,12 +141,12 @@ class Conversion implements ShouldQueue
         Log::info('Process Conversion DOC and XLS files', [
             'listFile' => $listFile,
             'doc' => [
-                'command_doc' => $command_doc,
-                'return_doc' => $return_doc
+                'command' => $command_doc,
+                'return' => $return_doc
             ],
             'xls' => [
-                'command_doc' => $command_xls,
-                'return_doc' => $return_xls
+                'command' => $command_xls,
+                'return' => $return_xls
             ],
         ]);
     }
