@@ -1,46 +1,245 @@
-[![Docker Hub; wyveo/nginx-php-fpm](https://img.shields.io/badge/docker%20hub-wyveo%2Fnginx--php--fpm-blue.svg?&logo=docker&style=for-the-badge)](https://hub.docker.com/r/wyveo/nginx-php-fpm/) [![](https://badges.weareopensource.me/docker/pulls/wyveo/nginx-php-fpm?style=for-the-badge)](https://hub.docker.com/r/wyveo/nginx-php-fpm/) [![](https://img.shields.io/docker/image-size/wyveo/nginx-php-fpm/latest?style=for-the-badge)](https://hub.docker.com/r/wyveo/nginx-php-fpm/) [![nginx 1.25.2](https://img.shields.io/badge/nginx-1.25.2-brightgreen.svg?&logo=nginx&logoColor=white&style=for-the-badge)](https://nginx.org/en/CHANGES) [![php 8.2.9](https://img.shields.io/badge/php--fpm-8.2.9-blue.svg?&logo=php&logoColor=white&style=for-the-badge)](https://secure.php.net/releases/8_2_9.php) [![License MIT](https://img.shields.io/badge/license-MIT-blue.svg?&style=for-the-badge)](https://github.com/wyveo/nginx-php-fpm/blob/master/LICENSE)
+# zakupki-file-idx
 
-## Introduction
-This is a Dockerfile to build a debian based container image running nginx and php-fpm 8.2.x / 8.1.x / 8.0.x / 7.4.x / 7.3.x / 7.2.x / 7.1.x / 7.0.x & Composer.
+Поисковая машина для индексации документов государственных закупок по **44-ФЗ и 223-ФЗ**.
 
-### Versioning
-| Docker Tag | GitHub Release | Nginx Version | PHP Version | Debian Version | Composer 
-|------------|----------------|---------------|-------------|----------------|----------|
-| latest     | master Branch  | 1.25.2        | 8.2.9       | bullseye       | 2.5.8    |
-| php82      | php82 Branch   | 1.25.2        | 8.2.9       | bullseye       | 2.5.8    |
-| php81      | php81 Branch   | 1.21.6        | 8.1.3       | bullseye       | 2.2.7    |
-| php80      | php80 Branch   | 1.21.6        | 8.0.16      | buster         | 2.0.13   |
-| php74      | php74 Branch   | 1.21.6        | 7.4.28      | buster         | 2.0.13   |
-| php73      | php73 Branch   | 1.21.6        | 7.3.33      | buster         | 2.0.13   |
-| php72      | php72 Branch   | 1.21.6        | 7.2.34      | buster         | 2.0.13   |
-| php71      | php71 Branch   | 1.21.6        | 7.1.33      | buster         | 2.0.13   |
-| php70      | php70 Branch   | 1.21.6        | 7.0.33      | buster         | 2.0.13   |
+Сервис предназначен для автоматической загрузки документов закупок, извлечения текстового содержимого из файлов различных форматов, сохранения полученных данных в поисковом индексе и предоставления REST API для полнотекстового поиска.
 
-## Building from source
-To build from source you need to clone the git repo and run docker build:
-```
-$ git clone https://github.com/wyveo/nginx-php-fpm.git
-$ cd nginx-php-fpm
+Проект является составной частью информационной системы zakupki.
+
+## Архитектура системы
+
+Система состоит из двух самостоятельных сервисов:
+
+1. **zakupki-app** — основное приложение для получения информации о закупках, управления задачами и работы пользователей.
+2. **zakupki-file-idx** — поисковая машина для индексации документов и полнотекстового поиска по их содержимому.
+
+Основное приложение находится в отдельном репозитории:
+
+[zakupki-app](https://github.com/aluxins/zakupki-app)
+
+### Общая схема взаимодействия
+
+```text
+             ┌────────────────────────┐
+             │       zakupki-app      │
+             │                        │
+             │  Получение закупок     │
+             │  Хранение данных       │
+             │  Работа пользователей  │
+             └────────────┬───────────┘
+                          │
+                   REST API / HTTP
+                          │
+                          ▼
+             ┌────────────────────────┐
+             │     zakupki-file-idx   │
+             │                        │
+             │  Загрузка файлов       │
+             │  Извлечение текста     │
+             │  Конвертация форматов  │
+             │  Индексация            │
+             └────────────┬───────────┘
+                          │
+                          ▼
+             ┌────────────────────────┐
+             │    Manticore Search    │
+             │                        │
+             │  Поисковый индекс      │
+             │  Полнотекстовый поиск  │
+             └────────────┬───────────┘
+                          │
+                          ▼
+             ┌────────────────────────┐
+             │       zakupki-app      │
+             │                        │
+             │  Laravel Scout         │
+             │  Поиск по документам   │
+             └────────────────────────┘
 ```
 
-followed by
-```
-$ docker build -t nginx-php-fpm:php82 . # PHP 8.2.x
+## Основные возможности
+
+### Загрузка документов
+
+Сервис принимает через REST API список документов, предназначенных для индексации.
+
+Для каждого документа передаются следующие данные:
+
+- `id` — идентификатор документа.
+- `url` — интернет-адрес для скачивания файла.
+- `reg_number` — регистрационный номер закупки, к которой относится документ.
+
+Получение списка документов выполняется основным приложением zakupki-app после сбора информации о закупках.
+
+### Поддерживаемые форматы
+
+Для извлечения текстового содержимого используются возможности LibreOffice в режиме командной строки.
+
+Поддерживаются следующие форматы документов:
+
+| Формат | Тип документа |
+|---|---|
+| DOC | Microsoft Word |
+| DOCX | Microsoft Word |
+| ODT | OpenDocument Text |
+| XLS | Microsoft Excel |
+| XLSX | Microsoft Excel |
+| ODS | OpenDocument Spreadsheet |
+| PDF | Portable Document Format |
+| ZIP | Archive File Format |
+| RAR * | Archive File Format |
+
+ \* Поддержка не реализована
+
+### Извлечение текста из документов
+
+Для обработки документов используется LibreOffice с поддержкой выполнения команд через командную оболочку.
+
+Конвертация выполняется в текстовый формат UTF-8.
+
+Пример команды:
+
+```bash
+timeout 60s nice soffice --headless \
+  --convert-to "txt:Text (encoded):UTF8" \
+  --outdir /usr/share/nginx/html/storage/app/documents/convert/ \
+  /usr/share/nginx/html/storage/app/documents/original/0372200014225000302_*.[do][do][ct]*
 ```
 
+В данном примере:
 
-## Pulling from Docker Hub
-```
-$ docker pull wyveo/nginx-php-fpm:php82
+- `timeout 60s` — ограничение времени выполнения команды.
+- `nice` — запуск процесса с измененным приоритетом планирования.
+- `soffice --headless` — запуск LibreOffice без графического интерфейса.
+- `--convert-to` — преобразование документа в текстовый формат UTF-8.
+- `--outdir` — каталог сохранения преобразованных документов.
+
+Оригинальные файлы и результаты конвертации хранятся раздельно:
+
+- `storage/app/documents/original/` — исходные документы.
+- `storage/app/documents/convert/` — преобразованные текстовые файлы.
+
+Для предотвращения зависания обработки отдельных документов предусмотрено ограничение времени выполнения операции.
+После выполнения операции конвертации и индексации текста документов все файлы удаляются.
+
+### Индексация документов
+
+После извлечения текста содержимое документов передается в Manticore Search посредством официального PHP-клиента `Manticoresearch\Client`.
+
+Для добавления документов в поисковый индекс используется метод:
+
+```php
+Manticoresearch\Client::addDocuments()
 ```
 
-## Running
-To run the container:
-```
-$ sudo docker run -d wyveo/nginx-php-fpm:php82
+Каждая запись связывается с регистрационным номером закупки (`reg_number`).
+
+Это позволяет выполнять поиск не только по содержимому отдельных документов, но и использовать регистрационный номер закупки для связи результатов поиска с основной информацией в zakupki-app.
+
+Таким образом, поисковый индекс содержит текстовое представление документов и идентификаторы закупок, к которым эти документы относятся.
+
+## REST API
+
+Поисковый сервис предоставляет REST API для взаимодействия с основным приложением zakupki-app.
+
+### 1. Отправка документов на индексацию
+
+<badge color="success">POST</badge> `/api/files-upload`
+
+Принимает массив документов для загрузки и последующей индексации.
+
+Пример запроса:
+
+```json
+[
+    {
+        "id": 1000010,
+        "url": "https://zakupki.gov.ru/44fz/filestore/public/1.0/download/priz/file.html?uid=2BA2336BFA3D415B8F6365D3F51825EF",
+        "reg_number": "0134300097525000775"
+    },
+    {
+        "id": 1000011,
+        "url": "https://zakupki.gov.ru/44fz/filestore/public/1.0/download/priz/file.html?uid=F2274A47414A9D8683C8474C6F175F",
+        "reg_number": "0134300097525000775"
+    },
+    {
+        "id": 1000012,
+        "url": "https://zakupki.gov.ru/44fz/filestore/public/1.0/download/priz/file.html?uid=5283FBCF5E404E7F8EC8D9D1DD253969",
+        "reg_number": "0134300097525000775"
+    }
+]
 ```
 
-Default web root:
+Все документы передаются в виде массива JSON-объектов.
+
+Задание основного приложения, отвечающее за отправку документов:
+
+`zakupki-app/app/Jobs/FilesIndexing.php`
+
+### 2. Полнотекстовый поиск
+
+<badge color="info">GET</badge> `/api/files/files?search=поисковый_запрос`
+
+Выполняет полнотекстовый поиск по содержимому проиндексированных документов.
+
+Параметры:
+
+| Параметр | Описание |
+|---|---|
+| `search` | Поисковый запрос |
+
+Пример:
+
+```http
+GET /api/files/files?search=поставка оборудования
 ```
-/usr/share/nginx/html
-```
+
+### 3. Получение документа по идентификатору
+
+<badge color="info">GET</badge> `/api/files/files/id12345`
+
+Получение документа из поискового сервиса по его идентификатору.
+
+### 4. Удаление документа из индекса
+
+<badge color="info">GET</badge> `/api/files/files/delete12345`
+
+Удаление документа из поискового индекса по идентификатору.
+
+
+## Технологический стек
+
+| Компонент | Назначение |
+|---|---|
+| Laravel | PHP-фреймворк |
+| Manticore Search | Полнотекстовая поисковая машина |
+| Manticoresearch\Client | PHP-клиент для взаимодействия с Manticore |
+| LibreOffice | Извлечение текста и конвертация документов |
+| REST API | Взаимодействие с основным приложением |
+
+## Взаимодействие с zakupki-app
+
+Сервис zakupki-file-idx не предназначен для самостоятельного получения информации о закупках. Его основная задача — обработка и индексация документов, переданных основным приложением.
+
+Общий алгоритм взаимодействия:
+
+1. zakupki-app получает информацию о закупке из внешних источников.
+2. Формирует список связанных с закупкой документов.
+3. Отправляет список документов в zakupki-file-idx через REST API.
+4. zakupki-file-idx загружает исходные файлы по переданным URL.
+5. Извлекает текстовое содержимое документов с помощью LibreOffice.
+6. Передает извлеченный текст в Manticore Search.
+7. Связывает проиндексированные документы с регистрационным номером закупки.
+8. zakupki-app выполняет полнотекстовый поиск посредством Laravel Scout.
+
+Благодаря такому разделению основной сервис отвечает за бизнес-логику и пользовательский интерфейс, а поисковая машина — за специализированную обработку документов и поиск по их содержимому.
+
+Подробнее об основном приложении:
+
+[README.md — zakupki-app](https://github.com/aluxins/zakupki-app#readme)
+
+## Репозиторий
+
+[https://github.com/aluxins/zakupki-file-idx](https://github.com/aluxins/zakupki-file-idx)
+
+Основное приложение: [zakupki-app](https://github.com/aluxins/zakupki-app)
